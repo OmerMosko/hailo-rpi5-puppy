@@ -11,17 +11,19 @@ import time
 
 
 class Pet_State(Enum):    
+    PET_IDLE = 0
     PET_HOMING = 1
     PET_NOT_CENTERED = 2
     PET_ON_COUCH = 3
     PET_LOCKED = 4
 
-events = []
-cooldown_period = 0
 SEC = 30 #FPS
 WARN_DURATION = 0
 SHOOT_DURATION = 10
 EVENTS_SIZE = 60 # "remember" 60 events for getting current event calc
+
+events = []
+cooldown_period = 0
 
 from hailo_rpi_common import (
     get_caps_from_pad,
@@ -47,6 +49,9 @@ class user_app_callback_class(app_callback_class):
 # User-defined callback function
 # -----------------------------------------------------------------------------------------------
 
+def get_timestamp():
+    return (round(time.time()))
+
 def shoot_pet():
     print ("Shooting dog")
 
@@ -58,8 +63,7 @@ def warn_pet():
     playsound("./resources/foya.mp3")
 
 def add_event(event):
-    timestamp = round(time.time())
-    events.append((timestamp,event))
+    events.append((get_timestamp(),event))
     print(f"Adding event {event} at {timestamp}")
 
 def get_event_duration(event):
@@ -76,19 +80,23 @@ def get_event_duration(event):
             return (stop_time - start_time)
 
 def get_current_event():    
-    rev_events = reversed(events)
-    occurances = []
-    cnt = 0
-    for ev in Pet_State:
-        occurances[ev] = 0
-    for event, timestamp in rev_events:        
-        cnt += 1
-        occurances[event] += 1
-        if cnt >= EVENTS_SIZE:
-            return occurances.index(max(occurances))
+    return Pet_State.PET_HOMING
+    # rev_events = reversed(events)
+    # occurances = []
+    # cnt = 0
+    # for ev in Pet_State:
+    #     occurances[ev] = 0
+    # for event, timestamp in rev_events:        
+    #     cnt += 1
+    #     occurances[event] += 1
+    #     if cnt >= EVENTS_SIZE:
+    #         return occurances.index(max(occurances))
 
 # This is the callback function that will be called when data is available from the pipeline
+cur_event = None
 def app_callback(pad, info, user_data):
+    global cur_event
+    global cooldown_period
     # Get the GstBuffer from the probe info
     buffer = info.get_buffer()
     # Check if the buffer is valid
@@ -98,7 +106,8 @@ def app_callback(pad, info, user_data):
     # Using the user_data to count the number of frames
     user_data.increment()
     string_to_print = ""
-    if (user_data.get_count() == 1):
+    
+    if (user_data.get_count() == 1):    
         string_to_print = """
 
       T A I L O 
@@ -148,7 +157,8 @@ def app_callback(pad, info, user_data):
                 #else if... (dog at the door? dog barking?)
                 else:
                     add_event(Pet_State.PET_LOCKED)
-    
+    if cur_event is None:
+        cur_event = Pet_State.PET_IDLE
     prev_event = cur_event
     cur_event = get_current_event()
 
@@ -185,7 +195,7 @@ def app_callback(pad, info, user_data):
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         user_data.set_frame(frame)
 
-    if string_to_print is not "":
+    if string_to_print != "":
         print(string_to_print)
 
     return Gst.PadProbeReturn.OK
