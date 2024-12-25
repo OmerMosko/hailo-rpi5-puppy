@@ -76,8 +76,8 @@ def add_event(event):
     events.append((timestamp, event))
     if (len(events) > EVENTS_SIZE):
         events = events[1:]
-    print(f"Adding event {event} at {timestamp}")
-    print(f"events len {len(events)}")
+    # print(f"Adding event {event} at {timestamp}")
+    # print(f"events len {len(events)}")
 
 def get_event_duration(event):
     flag=True
@@ -239,10 +239,10 @@ def app_callback(pad, info, user_data):
                     add_event(Pet_State.PET_LOCKED)
     if cur_event is None:
         cur_event = Pet_State.PET_IDLE
-    prev_event = cur_event
-    cur_event = get_current_event()
-
-    if cooldown_period == 0:
+    if cooldown_period < 1:
+        prev_event = cur_event
+        cur_event = get_current_event()
+        print (f'{prev_event} --> {cur_event}')
         match(cur_event):
             case Pet_State.PET_HOMING:
                 scan_pet() #Alon
