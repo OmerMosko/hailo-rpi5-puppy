@@ -6,12 +6,22 @@ import numpy as np
 import cv2
 import hailo
 from enum import Enum
+from playsound import playsound
+import time
 
-class Pet_State(Enum):
+
+class Pet_State(Enum):    
     PET_HOMING = 1
     PET_NOT_CENTERED = 2
     PET_ON_COUCH = 3
-    PET_LOCKED = 3
+    PET_LOCKED = 4
+
+events = []
+cooldown_period = 0
+SEC = 30 #FPS
+WARN_DURATION = 0
+SHOOT_DURATION = 10
+EVENTS_SIZE = 60 # "remember" 60 events for getting current event calc
 
 from hailo_rpi_common import (
     get_caps_from_pad,
@@ -37,6 +47,46 @@ class user_app_callback_class(app_callback_class):
 # User-defined callback function
 # -----------------------------------------------------------------------------------------------
 
+def shoot_pet():
+    print ("Shooting dog")
+
+def scan_pet():
+    print ("Scanning dog")
+
+def warn_pet():
+    print ("Warning dog")
+    playsound("./resources/foya.mp3")
+
+def add_event(event):
+    timestamp = round(time.time())
+    events.append((timestamp,event))
+    print(f"Adding event {event} at {timestamp}")
+
+def get_event_duration(event):
+    flag=True
+    events_list = reversed(events)
+    for ev in tmp_events:
+        if ev[1] == event and flag:
+            stop_time = ev[0]
+            start_time = ev[0]
+            flag=False
+        elif ev[1] == event and not flag:
+            start_time = ev[0]
+        elif ev[1] != event:
+            return (stop_time - start_time)
+
+def get_current_event():    
+    rev_events = reversed(events)
+    occurances = []
+    cnt = 0
+    for ev in Pet_State:
+        occurances[ev] = 0
+    for event, timestamp in rev_events:        
+        cnt += 1
+        occurances[event] += 1
+        if cnt >= EVENTS_SIZE:
+            return occurances.index(max(occurances))
+
 # This is the callback function that will be called when data is available from the pipeline
 def app_callback(pad, info, user_data):
     # Get the GstBuffer from the probe info
@@ -47,8 +97,17 @@ def app_callback(pad, info, user_data):
 
     # Using the user_data to count the number of frames
     user_data.increment()
+    string_to_print = ""
     if (user_data.get_count() == 1):
-        string_to_print = "-= Tailo =-"
+        string_to_print = """
+
+      T A I L O 
+           __
+      (___()'`;
+      /,    /`
+      \\"--\\
+    
+    """
 
     # Get the caps from the pad
     format, width, height = get_caps_from_pad(pad)
@@ -65,25 +124,68 @@ def app_callback(pad, info, user_data):
 
     # Parse the detections
     detection_count = 0
-    for detection in detections:
-        label = detection.get_label()
-        bbox = detection.get_bbox()
-        # confidence = detection.get_confidence()
-        if label == "person":
-            # string_to_print += 
-            detection_count += 1
+    pet_found = False
+    
+    # print (detection.values())
+    detection_map = {det.get_label(): det.get_bbox() for det in detections}
+    
+    dog_bbox = (detection_map.get("dog", None))
+    couch_bbox = (detection_map.get("couch", None))
+    if couch_bbox is None:
+        couch_bbox = (detection_map.get("chair", None))    
+
+    if dog_bbox is None:
+        events.append((get_timestamp(), Pet_State.PET_HOMING))
+    else:
+        if not is_dog_centered(dog_bbox):
+            add_event(Pet_State.PET_NOT_CENTERED)
+        else:
+            if couch_bbox is None:
+                (Pet_State.PET_LOCKED)
+            else:
+                if is_dog_on_couch(dog_bbox, couch_bbox):
+                    add_event(Pet_State.PET_ON_COUCH)
+                #else if... (dog at the door? dog barking?)
+                else:
+                    add_event(Pet_State.PET_LOCKED)
+    
+    prev_event = cur_event
+    cur_event = get_current_event()
+
+    if cooldown_period == 0:
+        match(cur_event):
+            case Pet_State.PET_HOMING:
+                scan_pet() #Alon
+                cooldown_period = 2 * SEC
+            case Pet_State.PET_NOT_CENTERED:
+                track_pet(get_pet_location()) #Alon
+                cooldown_period = 2 * SEC
+            case Pet_State.PET_ON_COUCH:
+                duration = get_event_duration(Pet_State.PET_ON_COUCH)
+                if WARN_DURATION < duration < SHOOT_DURATION:
+                    warn_pet()
+                    cooldown_period = 5 * SEC
+                elif duration >= SHOOT_DURATION:
+                    shoot_pet() #shoot to kill
+                    cooldown_period = 3 * SEC
+                else: #less than warn duration, grace
+                    cooldown_period = 1 * SEC
+
+    cooldown_period -= 1
+
     if user_data.use_frame:
         # Note: using imshow will not work here, as the callback function is not running in the main thread
         # Let's print the detection count to the frame
         cv2.putText(frame, f"Detections: {detection_count}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
         # Example of how to use the new_variable and new_function from the user_data
+        
         # Let's print the new_variable and the result of the new_function to the frame
         cv2.putText(frame, f"{user_data.new_function()} {user_data.new_variable}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
         # Convert the frame to BGR
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         user_data.set_frame(frame)
 
-    if string_to_print is not None:
+    if string_to_print is not "":
         print(string_to_print)
 
     return Gst.PadProbeReturn.OK
