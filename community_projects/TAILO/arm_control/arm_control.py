@@ -218,10 +218,10 @@ def set_arm_angle(angle, motor_id):
         return False
 
     while 1:
-        arm_present_position = read_arm_horizontal_angle()
-        print("[ID:%03d] GoalPos:%03d  PresPos:%03d" % (motor_id, goal_pos, arm_present_position))
-        if not abs(angle - arm_present_position) > DXL_MOVING_STATUS_THRESHOLD:
-            print("success! [ID:%03d] GoalPos:%03d  PresPos:%03d" % (motor_id, goal_pos, arm_present_position))
+        arm_present_angle = read_arm_horizontal_angle()
+        print("[ID:%03d] GoalPos:%03d  PresPos:%03d" % (motor_id, goal_pos, arm_present_angle))
+        if not abs(angle - arm_present_angle) > DXL_MOVING_STATUS_THRESHOLD:
+            print("success! [ID:%03d] GoalAngle:%03d  PresentAngle:%03d" % (motor_id, angle, arm_present_angle))
             break
         time.sleep(0.1)
     return True
