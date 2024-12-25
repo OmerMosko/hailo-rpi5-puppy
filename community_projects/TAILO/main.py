@@ -8,6 +8,8 @@ import hailo
 from enum import Enum
 from playsound import playsound
 import time
+import treat_control
+import arm_control
 from collections import Counter
 
 
@@ -55,9 +57,14 @@ def get_timestamp():
 
 def shoot_pet():
     print ("Shooting dog")
+    #TODO: move treat to treat events
+    treat_control.perform_treat_throw()
+
 
 def scan_pet():
     print ("Scanning dog")
+    if(not arm_control.move_arm_horizontal_step(10)):
+        print ("Cannot move arm")
 
 def warn_pet():
     print ("Warning dog")
@@ -276,6 +283,8 @@ def app_callback(pad, info, user_data):
 if __name__ == "__main__":
     # Create an instance of the user app callback class
     user_data = user_app_callback_class()
+    arm_control.init_arm_control()
+    treat_control.init_treat_control()
     app = GStreamerDetectionApp(app_callback, user_data)
     app.run()
 
