@@ -328,7 +328,7 @@ def app_callback(pad, info, user_data):
 if __name__ == "__main__":
     # Create an instance of the user app callback class
     user_data = user_app_callback_class()
-    # arm_control.init_arm_control()
+    # arm_control.enable_arm()
     # treat_control.init_treat_control()
     app = GStreamerDetectionApp(app_callback, user_data)
     app.run()
