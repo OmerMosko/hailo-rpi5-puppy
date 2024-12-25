@@ -163,13 +163,13 @@ def app_callback(pad, info, user_data):
         couch_bbox = (detection_map.get("chair", None))    
 
     if dog_bbox is None:
-        events.append((get_timestamp(), Pet_State.PET_HOMING))
+        add_event(Pet_State.PET_HOMING)
     else:
         if not is_pet_centered(dog_bbox):
             add_event(Pet_State.PET_NOT_CENTERED)
         else:
             if couch_bbox is None:
-                (Pet_State.PET_LOCKED)
+                add_event (Pet_State.PET_LOCKED)
             else:
                 if is_pet_on_couch(dog_bbox, couch_bbox):
                     add_event(Pet_State.PET_ON_COUCH)
