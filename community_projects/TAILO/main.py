@@ -73,11 +73,19 @@ def play_sound_in_background(file_path):
     """
     threading.Thread(target=playsound, args=(file_path,), daemon=True).start()
 
+def treat_pet():
+    print ("Treat dog")
+    files = [
+        'Tovaaaaa.mp3'
+    ]
+    random_file = random.choice(files)
+    print(random_file)
+    play_sound_in_background(f"./resources/{random_file}")
 
 def scan_pet():
     print ("Scanning dog")
-    if(not arm_control.move_arm_horizontal_step(10)):
-        print ("Cannot move arm")
+    # if(not arm_control.move_arm_horizontal_step(10)):
+        # print ("Cannot move arm")
 
 def warn_pet():
     print ("Warning dog")
@@ -276,8 +284,11 @@ def app_callback(pad, info, user_data):
         print (f'{prev_event} --> {cur_event}')
         match(cur_event):
             case Pet_State.PET_HOMING:
+                if prev_event == Pet_State.PET_ON_COUCH:
+                    treat_pet()
                 scan_pet() #Alon
                 cooldown_period = 2 * SEC
+
             case Pet_State.PET_NOT_CENTERED:
                 track_pet(get_pet_location()) #Alon
                 cooldown_period = 2 * SEC
@@ -291,6 +302,9 @@ def app_callback(pad, info, user_data):
                     cooldown_period = 3 * SEC
                 else: #less than warn duration, grace
                     cooldown_period = 1 * SEC
+            case Pet_State.PET_LOCKED:
+                if prev_event == Pet_State.PET_ON_COUCH:
+                    treat_pet()
 
     cooldown_period -= 1
 
