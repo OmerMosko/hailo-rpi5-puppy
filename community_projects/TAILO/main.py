@@ -179,6 +179,15 @@ def is_pet_on_couch(dog_bbox, couch_bbox):
 def get_current_event():
     event_names = [event for _, event in events]
     event_counter = Counter(event_names)
+    event_to_reduce = Pet_State.PET_HOMING
+    new_count = event_counter[event_to_reduce] // 3
+    # Create a new list with the reduced occurrences
+    reduced_events = []
+    for event in events:
+        if event == event_to_reduce and event_counter[event_to_reduce] > new_count:
+            event_counter[event_to_reduce] -= 1  # Skip occurrences to reduce count
+        else:
+            reduced_events.append(event)
     most_common_event, occurrences = event_counter.most_common(1)[0]
     print(f"The most popular event is '{most_common_event}' with {occurrences} occurrences.")
 
