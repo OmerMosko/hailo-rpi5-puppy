@@ -43,4 +43,14 @@ for URL in "${FILE_URLS[@]}"; do
     download_file "$URL"
 done
 
+echo "Clone Dynamixel SDK"
+mkdir -p ./open_source
+pushd "open_source"
+git clone https://github.com/ROBOTIS-GIT/DynamixelSDK.git
+pushd "DynamixelSDK/python"
+sudo python setup.py install
+popd
+popd
+
+
 echo "All downloads completed."
