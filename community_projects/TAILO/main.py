@@ -152,36 +152,40 @@ def is_pet_centered(pet_bbox):
 
 def is_pet_on_couch(dog_bbox, couch_bbox):
     """
-    Determines if the dog's bounding box is fully contained within the couch's bounding box.
-    
+    Determines if the dog's bounding box is fully contained within any of the couch bounding boxes.
+
     Args:
-        dog_bbox (tuple): Bounding box of the dog in the format (x_min, y_min, height, width).
-        couch_bbox (tuple): Bounding box of the couch in the format (x_min, y_min, height, width).
-    
+        dog_bbox (object): Bounding box of the dog with methods xmin(), ymin(), height(), and width().
+        couch_bbox (list): List of bounding box objects of couches, each with methods xmin(), ymin(), height(), and width().
+
     Returns:
-        bool: True if the dog's bounding box is fully contained within the couch's bounding box, False otherwise.
+        bool: True if the dog's bounding box is fully contained within any couch's bounding box, False otherwise.
     """
-    # Compute x_max and y_max for both bounding boxes
+    # Compute x_max and y_max for the dog's bounding box
     dog_x_min = dog_bbox.xmin()
-    dog_y_min =dog_bbox.ymin()
+    dog_y_min = dog_bbox.ymin()
     dog_height = dog_bbox.height()
     dog_width = dog_bbox.width()
-    
-    couch_x_min = couch_bbox.xmin()
-    couch_y_min =couch_bbox.ymin()
-    couch_height = couch_bbox.height()
-    couch_width = couch_bbox.width()
-    
     dog_x_max = dog_x_min + dog_width
     dog_y_max = dog_y_min + dog_height
-    couch_x_max = couch_x_min + couch_width
-    couch_y_max = couch_y_min + couch_height
-    
-    # Check if the dog's bounding box is fully contained within the couch's bounding box
-    is_fully_within_x = dog_x_min >= couch_x_min and dog_x_max <= couch_x_max
-    is_fully_within_y = dog_y_min >= couch_y_min and dog_y_max <= couch_y_max
-    
-    return is_fully_within_x and is_fully_within_y
+
+    # Check against each couch bounding box
+    for couch in couch_bbox:
+        couch_x_min = couch.xmin()
+        couch_y_min = couch.ymin()
+        couch_height = couch.height()
+        couch_width = couch.width()
+        couch_x_max = couch_x_min + couch_width
+        couch_y_max = couch_y_min + couch_height
+
+        # Check if the dog's bounding box is fully contained within the current couch bounding box
+        is_fully_within_x = dog_x_min >= couch_x_min and dog_x_max <= couch_x_max
+        is_fully_within_y = dog_y_min >= couch_y_min and dog_y_max <= couch_y_max
+
+        if is_fully_within_x and is_fully_within_y:
+            return True
+
+    return False
 
 
 def get_current_event():
@@ -253,14 +257,13 @@ def app_callback(pad, info, user_data):
     # Parse the detections
     detection_count = 0
     pet_found = False
-    
+    chair_or_couch_bbox_list = []
     # print (detection.values())
+    for detection in detections:
+        if detection.get_label() in ["chair", "couch"]:
+            chair_or_couch_bbox_list.append(detection.get_bbox())
     detection_map = {det.get_label(): det.get_bbox() for det in detections}
-    
     dog_bbox = (detection_map.get("dog", None))
-    couch_bbox = (detection_map.get("couch", None))
-    if couch_bbox is None:
-        couch_bbox = (detection_map.get("chair", None))    
 
     if dog_bbox is None:
         add_event(Pet_State.PET_HOMING)
@@ -268,10 +271,10 @@ def app_callback(pad, info, user_data):
         if not is_pet_centered(dog_bbox):
             add_event(Pet_State.PET_NOT_CENTERED)
         else:
-            if couch_bbox is None:
+            if len(chair_or_couch_bbox_list) == 0:
                 add_event (Pet_State.PET_LOCKED)
             else:
-                if is_pet_on_couch(dog_bbox, couch_bbox):
+                if is_pet_on_couch(dog_bbox, chair_or_couch_bbox_list):
                     add_event(Pet_State.PET_ON_COUCH)
                 #else if... (dog at the door? dog barking?)
                 else:
