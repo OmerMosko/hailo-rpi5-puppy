@@ -75,7 +75,7 @@ def add_event(event):
 def get_event_duration(event):
     flag=True
     events_list = reversed(events)
-    for ev in tmp_events:
+    for ev in events_list:
         if ev[1] == event and flag:
             stop_time = ev[0]
             start_time = ev[0]
@@ -84,6 +84,29 @@ def get_event_duration(event):
             start_time = ev[0]
         elif ev[1] != event:
             return (stop_time - start_time)
+    return 
+
+def find_event_duration(target_event):
+    """
+    Finds the duration of a given event in a list of (timestamp, event) tuples.
+    
+    Args:
+        events (list of tuples): List of (timestamp, event) tuples sorted by timestamp.
+        target_event (str): The event for which the duration is to be calculated.
+    
+    Returns:
+        int or float: The duration of the event in the same units as the timestamps, or 0 if not found.
+    """
+    # Filter timestamps for the target event
+    timestamps = [timestamp for timestamp, event in events if event == target_event]
+    
+    # If no timestamps are found, return 0
+    if not timestamps:
+        return 0
+    
+    # Calculate the duration
+    duration = max(timestamps) - min(timestamps)
+    return duration
 
 
 def is_pet_centered(pet_bbox):
@@ -102,8 +125,15 @@ def is_pet_on_couch(dog_bbox, couch_bbox):
         bool: True if the dog's bounding box is fully contained within the couch's bounding box, False otherwise.
     """
     # Compute x_max and y_max for both bounding boxes
-    dog_x_min, dog_y_min, dog_height, dog_width = dog_bbox
-    couch_x_min, couch_y_min, couch_height, couch_width = couch_bbox
+    dog_x_min = dog_bbox.xmin()
+    dog_y_min =dog_bbox.ymin()
+    dog_height = dog_bbox.height()
+    dog_width = dog_bbox.width()
+    
+    couch_x_min = couch_bbox.xmin()
+    couch_y_min =couch_bbox.ymin()
+    couch_height = couch_bbox.height()
+    couch_width = couch_bbox.width()
     
     dog_x_max = dog_x_min + dog_width
     dog_y_max = dog_y_min + dog_height
@@ -214,7 +244,7 @@ def app_callback(pad, info, user_data):
                 track_pet(get_pet_location()) #Alon
                 cooldown_period = 2 * SEC
             case Pet_State.PET_ON_COUCH:
-                duration = get_event_duration(Pet_State.PET_ON_COUCH)
+                duration = find_event_duration(Pet_State.PET_ON_COUCH)
                 if WARN_DURATION < duration < SHOOT_DURATION:
                     warn_pet()
                     cooldown_period = 5 * SEC
