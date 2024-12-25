@@ -5,6 +5,13 @@ import os
 import numpy as np
 import cv2
 import hailo
+from enum import Enum
+
+class Pet_State(Enum):
+    PET_HOMING = 1
+    PET_NOT_CENTERED = 2
+    PET_ON_COUCH = 3
+    PET_LOCKED = 3
 
 from hailo_rpi_common import (
     get_caps_from_pad,
@@ -12,6 +19,7 @@ from hailo_rpi_common import (
     app_callback_class,
 )
 from detection_pipeline import GStreamerDetectionApp
+
 
 # -----------------------------------------------------------------------------------------------
 # User-defined class to be used in the callback function
@@ -39,7 +47,8 @@ def app_callback(pad, info, user_data):
 
     # Using the user_data to count the number of frames
     user_data.increment()
-    string_to_print = f"Frame count: {user_data.get_count()}\n"
+    if (user_data.get_count() == 1):
+        string_to_print = "-= Tailo =-"
 
     # Get the caps from the pad
     format, width, height = get_caps_from_pad(pad)
@@ -59,9 +68,9 @@ def app_callback(pad, info, user_data):
     for detection in detections:
         label = detection.get_label()
         bbox = detection.get_bbox()
-        confidence = detection.get_confidence()
+        # confidence = detection.get_confidence()
         if label == "person":
-            string_to_print += f"Detection: {label} {confidence:.2f}\n"
+            # string_to_print += 
             detection_count += 1
     if user_data.use_frame:
         # Note: using imshow will not work here, as the callback function is not running in the main thread
@@ -74,7 +83,9 @@ def app_callback(pad, info, user_data):
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         user_data.set_frame(frame)
 
-    print(string_to_print)
+    if string_to_print is not None:
+        print(string_to_print)
+
     return Gst.PadProbeReturn.OK
 
 if __name__ == "__main__":
@@ -82,3 +93,33 @@ if __name__ == "__main__":
     user_data = user_app_callback_class()
     app = GStreamerDetectionApp(app_callback, user_data)
     app.run()
+
+
+# Pseudo Code:
+
+# # Start Homing
+# if dog not in frame:
+#     add_event(pet_homing)    
+# else #dog in frame:
+#     if dog not in middle of frame:
+#         add_event(pet_not_centered)        
+#     else # Locked                
+#         if dog on couch:
+#             add_event(pet_on_couch)
+#         else if .... (near the door? barking?)
+#         else 
+#             add_event(pet_locked)
+            
+# prev_event = cur_event
+# cur_event = max(events) #most common event
+
+# cooldown_period = 30
+# if not cooldown_period:
+#     switch (cur_event)
+#         missing_dog: scan_dog, cooldown_period = 30
+#         dog_not_centered: move arm, cooldown_period = 50
+#         dog_on_couch: 
+#             if dog_on_couch_cnt > 100: warn_dog, cooldown_period = 200
+#             if dog_on_couch_cnt > 500: shoot_dog, cooldown_period = 200
+#         dog_in_frame:
+#             if prev_event is dog_on_couch give treat
