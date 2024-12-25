@@ -117,7 +117,7 @@ def display_user_data_frame(user_data: app_callback_class):
 def get_default_parser():
     parser = argparse.ArgumentParser(description="Hailo App Help")
     current_path = os.path.dirname(os.path.abspath(__file__))
-    default_video_source = os.path.join(current_path, '../../resources/detection0.mp4')
+    default_video_source = os.path.join(current_path, 'resources/brandy_sitting.mp4')
     parser.add_argument(
         "--input", "-i", type=str, default=default_video_source,
         help="Input source. Can be a file, USB or RPi camera (CSI camera module). \

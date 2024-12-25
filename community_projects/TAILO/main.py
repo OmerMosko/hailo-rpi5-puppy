@@ -8,6 +8,7 @@ import hailo
 from enum import Enum
 from playsound import playsound
 import time
+from collections import Counter
 
 
 class Pet_State(Enum):    
@@ -63,7 +64,11 @@ def warn_pet():
     playsound("./resources/foya.mp3")
 
 def add_event(event):
-    events.append((get_timestamp(),event))
+    global events
+    timestamp = get_timestamp()
+    events.append((timestamp, event))
+    if (len(events) > EVENTS_SIZE):
+        events = events[1:]
     print(f"Adding event {event} at {timestamp}")
 
 def get_event_duration(event):
@@ -79,8 +84,22 @@ def get_event_duration(event):
         elif ev[1] != event:
             return (stop_time - start_time)
 
-def get_current_event():    
-    return Pet_State.PET_HOMING
+
+def is_pet_centered(pet_bbox):
+    return True
+
+
+def is_pet_on_couch(pet_bbox, couch_bbox):
+    return False
+
+
+def get_current_event():
+    event_names = [event for _, event in events]
+    event_counter = Counter(event_names)
+    most_common_event, occurrences = event_counter.most_common(1)[0]
+    print(f"The most popular event is '{most_common_event}' with {occurrences} occurrences.")
+
+    return most_common_event
     # rev_events = reversed(events)
     # occurances = []
     # cnt = 0
@@ -146,13 +165,13 @@ def app_callback(pad, info, user_data):
     if dog_bbox is None:
         events.append((get_timestamp(), Pet_State.PET_HOMING))
     else:
-        if not is_dog_centered(dog_bbox):
+        if not is_pet_centered(dog_bbox):
             add_event(Pet_State.PET_NOT_CENTERED)
         else:
             if couch_bbox is None:
                 (Pet_State.PET_LOCKED)
             else:
-                if is_dog_on_couch(dog_bbox, couch_bbox):
+                if is_pet_on_couch(dog_bbox, couch_bbox):
                     add_event(Pet_State.PET_ON_COUCH)
                 #else if... (dog at the door? dog barking?)
                 else:
