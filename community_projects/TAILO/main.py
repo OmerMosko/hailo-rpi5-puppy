@@ -60,6 +60,19 @@ def shoot_pet():
     #TODO: move treat to treat events
     treat_control.perform_treat_throw()
 
+import threading
+from playsound import playsound
+import random
+
+def play_sound_in_background(file_path):
+    """
+    Plays an audio file in the background using playsound.
+    
+    Args:
+        file_path (str): Path to the audio file to play.
+    """
+    threading.Thread(target=playsound, args=(file_path,), daemon=True).start()
+
 
 def scan_pet():
     print ("Scanning dog")
@@ -68,7 +81,16 @@ def scan_pet():
 
 def warn_pet():
     print ("Warning dog")
-    playsound("./resources/foya.mp3")
+    files = [
+        'No.mp3',
+        'ahhahha.mp3',
+        'brandyyyyyy.mp3',
+        'foya.mp3',
+        'mosko_barking.mp3'
+    ]
+    random_file = random.choice(files)
+    print(random_file)
+    play_sound_in_background(f"./resources/{random_file}")
 
 def add_event(event):
     global events
@@ -283,8 +305,8 @@ def app_callback(pad, info, user_data):
 if __name__ == "__main__":
     # Create an instance of the user app callback class
     user_data = user_app_callback_class()
-    arm_control.init_arm_control()
-    treat_control.init_treat_control()
+    # arm_control.init_arm_control()
+    # treat_control.init_treat_control()
     app = GStreamerDetectionApp(app_callback, user_data)
     app.run()
 
