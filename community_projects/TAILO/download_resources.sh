@@ -1,17 +1,24 @@
 #!/bin/bash
 
 # Instructions:
-# 1. This script downloads the specified file from the Hailo Model Zoo.
-# 2. The file will be saved into the 'resources' directory.
+# 1. This script downloads specified files from the Hailo Model Zoo.
+# 2. The files will be saved into the 'resources' directory.
 # 3. Ensure 'wget' is installed on your system.
 
-# URL of the file to download
-FILE_URL="https://hailo-model-zoo.s3.eu-west-2.amazonaws.com/ModelZoo/Compiled/v2.13.0/hailo8/yolov5m_wo_spp.hef"
+# Array of file URLs to download
+FILE_URLS=(
+    "https://hailo-csdata.s3.eu-west-2.amazonaws.com/resources/hackathon/ahhahha.mp3"
+    "https://hailo-csdata.s3.eu-west-2.amazonaws.com/resources/hackathon/brandyyyyyy.mp3"
+    "https://hailo-csdata.s3.eu-west-2.amazonaws.com/resources/hackathon/foya.mp3"
+    "https://hailo-csdata.s3.eu-west-2.amazonaws.com/resources/hackathon/mosko_barking.mp3"
+    "https://hailo-csdata.s3.eu-west-2.amazonaws.com/resources/hackathon/No.mp3"
+    "https://hailo-csdata.s3.eu-west-2.amazonaws.com/resources/hackathon/Tovaaaaa.mp3"
+)
 
 # Create resources directory if it doesn't exist
 mkdir -p ./resources
 
-# Function to download the file
+# Function to download a file
 download_file() {
     URL=$1
     FILENAME=$(basename "$URL")
@@ -29,9 +36,11 @@ download_file() {
 }
 
 # Main logic
-echo "Starting download..."
+echo "Starting downloads..."
 
-# Download the specified file
-download_file "$FILE_URL"
+# Iterate over the list of URLs and download each
+for URL in "${FILE_URLS[@]}"; do
+    download_file "$URL"
+done
 
-echo "Download completed."
+echo "All downloads completed."
