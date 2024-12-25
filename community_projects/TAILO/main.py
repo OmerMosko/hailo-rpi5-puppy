@@ -70,6 +70,7 @@ def add_event(event):
     if (len(events) > EVENTS_SIZE):
         events = events[1:]
     print(f"Adding event {event} at {timestamp}")
+    print(f"events len {len(events)}")
 
 def get_event_duration(event):
     flag=True
@@ -89,8 +90,31 @@ def is_pet_centered(pet_bbox):
     return True
 
 
-def is_pet_on_couch(pet_bbox, couch_bbox):
-    return False
+def is_pet_on_couch(dog_bbox, couch_bbox):
+    """
+    Determines if the dog's bounding box is fully contained within the couch's bounding box.
+    
+    Args:
+        dog_bbox (tuple): Bounding box of the dog in the format (x_min, y_min, height, width).
+        couch_bbox (tuple): Bounding box of the couch in the format (x_min, y_min, height, width).
+    
+    Returns:
+        bool: True if the dog's bounding box is fully contained within the couch's bounding box, False otherwise.
+    """
+    # Compute x_max and y_max for both bounding boxes
+    dog_x_min, dog_y_min, dog_height, dog_width = dog_bbox
+    couch_x_min, couch_y_min, couch_height, couch_width = couch_bbox
+    
+    dog_x_max = dog_x_min + dog_width
+    dog_y_max = dog_y_min + dog_height
+    couch_x_max = couch_x_min + couch_width
+    couch_y_max = couch_y_min + couch_height
+    
+    # Check if the dog's bounding box is fully contained within the couch's bounding box
+    is_fully_within_x = dog_x_min >= couch_x_min and dog_x_max <= couch_x_max
+    is_fully_within_y = dog_y_min >= couch_y_min and dog_y_max <= couch_y_max
+    
+    return is_fully_within_x and is_fully_within_y
 
 
 def get_current_event():
