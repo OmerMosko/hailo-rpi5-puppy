@@ -105,14 +105,15 @@ elif MY_DXL == 'XL320':
     DXL_MINIMUM_POSITION_VALUE = 0
     # Refer to the CCW Angle Limit of product eManual
     DXL_MAXIMUM_POSITION_VALUE = 1023
-    BAUDRATE = 1000000   # Default Baudrate of XL-320 is 1Mbps
+    BAUDRATE = 115200   # Default Baudrate of XL-320 is 1Mbps
 
 # DYNAMIXEL Protocol Version (1.0 / 2.0)
 # https://emanual.robotis.com/docs/en/dxl/protocol2/
 PROTOCOL_VERSION = 2.0
 
 # Factory default ID of all DYNAMIXEL is 1
-DXL_ID = 1
+HORIZ_DXL_ID = 2
+VERT_DXL_ID = 3
 
 # Use the actual port assigned to the U2D2.
 # ex) Windows: "COM*", Linux: "/dev/ttyUSB*", Mac: "/dev/tty.usbserial-*"
@@ -120,7 +121,7 @@ DEVICENAME = '/dev/ttyAMA0'
 
 TORQUE_ENABLE = 1     # Value for enabling the torque
 TORQUE_DISABLE = 0     # Value for disabling the torque
-DXL_MOVING_STATUS_THRESHOLD = 20    # Dynamixel moving status threshold
+DXL_MOVING_STATUS_THRESHOLD = 20 * DXL_REG_VAL_TO_ANGLE    # Dynamixel moving status threshold
 
 # Initialize PortHandler instance
 # Set the port path
@@ -153,8 +154,15 @@ else:
 
 def enable_arm():
     # Enable Dynamixel Torque
-    dxl_comm_result, dxl_error = packetHandler.write1ByteTxRx(
-        portHandler, DXL_ID, ADDR_TORQUE_ENABLE, TORQUE_ENABLE)
+    dxl_comm_result, dxl_error = packetHandler.write1ByteTxRx(portHandler, HORIZ_DXL_ID, ADDR_TORQUE_ENABLE, TORQUE_ENABLE)
+    if dxl_comm_result != COMM_SUCCESS:
+        print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
+    elif dxl_error != 0:
+        print("%s" % packetHandler.getRxPacketError(dxl_error))
+    else:
+        print("Dynamixel has been successfully connected")
+
+    dxl_comm_result, dxl_error = packetHandler.write1ByteTxRx(portHandler, VERT_DXL_ID, ADDR_TORQUE_ENABLE, TORQUE_ENABLE)
     if dxl_comm_result != COMM_SUCCESS:
         print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
     elif dxl_error != 0:
@@ -165,8 +173,13 @@ def enable_arm():
 
 def disable_arm():
     # Disable Dynamixel Torque
-    dxl_comm_result, dxl_error = packetHandler.write1ByteTxRx(
-        portHandler, DXL_ID, ADDR_TORQUE_ENABLE, TORQUE_DISABLE)
+    dxl_comm_result, dxl_error = packetHandler.write1ByteTxRx(portHandler, HORIZ_DXL_ID, ADDR_TORQUE_ENABLE, TORQUE_DISABLE)
+    if dxl_comm_result != COMM_SUCCESS:
+        print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
+    elif dxl_error != 0:
+        print("%s" % packetHandler.getRxPacketError(dxl_error))
+
+    dxl_comm_result, dxl_error = packetHandler.write1ByteTxRx(portHandler, VERT_DXL_ID, ADDR_TORQUE_ENABLE, TORQUE_DISABLE)
     if dxl_comm_result != COMM_SUCCESS:
         print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
     elif dxl_error != 0:
@@ -188,20 +201,49 @@ def move_arm_horizontal_step(step):
     set_arm_horizontal_angle(arm_present_angle + step)
 
 
+def move_arm_vertical_step(step):
+    arm_present_angle = read_arm_vertical_angle()
+    step *= 5
+    if (arm_present_angle + step > 180):
+        print("Cannot move arm to angle greater than 180")
+        return False
+    elif (arm_present_angle + step < 0):
+        print("Cannot move arm to angle less than 0")
+        return False
+    set_arm_vertical_angle(arm_present_angle + step)
+
+
 def set_arm_horizontal_angle(angle):
-    return set_arm_angle(angle, DXL_ID)
+    return set_arm_angle(angle, HORIZ_DXL_ID)
+
+
+def set_arm_vertical_angle(angle):
+    return set_arm_angle(angle, VERT_DXL_ID)
 
 
 def read_arm_horizontal_angle():
     # Read present position
-    dxl_present_position, dxl_comm_result, dxl_error = packetHandler.read2ByteTxRx(portHandler, DXL_ID, ADDR_PRESENT_POSITION)
+    dxl_present_position, dxl_comm_result, dxl_error = packetHandler.read2ByteTxRx(portHandler, HORIZ_DXL_ID, ADDR_PRESENT_POSITION)
     if dxl_comm_result != COMM_SUCCESS:
         print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
     elif dxl_error != 0:
         print("%s" % packetHandler.getRxPacketError(dxl_error))
 
     angle = dxl_present_position * DXL_REG_VAL_TO_ANGLE
-    # print("[ID:%03d] Angle:%03d  PresPos:%03d" %(DXL_ID, angle, dxl_present_position))
+    # print("[ID:%03d] Angle:%03d  PresPos:%03d" %(HORIZ_DXL_ID, angle, dxl_present_position))
+    return angle
+
+
+def read_arm_vertical_angle():
+    # Read present position
+    dxl_present_position, dxl_comm_result, dxl_error = packetHandler.read2ByteTxRx(portHandler, VERT_DXL_ID, ADDR_PRESENT_POSITION)
+    if dxl_comm_result != COMM_SUCCESS:
+        print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
+    elif dxl_error != 0:
+        print("%s" % packetHandler.getRxPacketError(dxl_error))
+
+    angle = dxl_present_position * DXL_REG_VAL_TO_ANGLE
+    # print("[ID:%03d] Angle:%03d  PresPos:%03d" %(HORIZ_DXL_ID, angle, dxl_present_position))
     return angle
 
 
@@ -229,17 +271,39 @@ def set_arm_angle(angle, motor_id):
 
 # if enable_arm() is False:
 #     quit()
+# move_arm_horizontal_step(1)
+# move_arm_vertical_step(1)
 # if set_arm_horizontal_angle(10) is False:
 #     disable_arm()
 #     quit()
+# time.sleep(0.1)
 # if set_arm_horizontal_angle(50) is False:
 #     disable_arm()
 #     quit()
+# time.sleep(0.1)
 # if set_arm_horizontal_angle(170) is False:
 #     disable_arm()
 #     quit()
+# time.sleep(0.1)
 # if set_arm_horizontal_angle(10) is False:
 #     disable_arm()
 #     quit()
+# time.sleep(0.1)
+# if set_arm_vertical_angle(10) is False:
+#     disable_arm()
+#     quit()
+# time.sleep(0.1)
+# if set_arm_vertical_angle(50) is False:
+#     disable_arm()
+#     quit()
+# time.sleep(0.1)
+# if set_arm_vertical_angle(170) is False:
+#     disable_arm()
+#     quit()
+# time.sleep(0.1)
+# if set_arm_vertical_angle(10) is False:
+#     disable_arm()
+#     quit()
+# time.sleep(0.1)
 # disable_arm()
 # quit()
