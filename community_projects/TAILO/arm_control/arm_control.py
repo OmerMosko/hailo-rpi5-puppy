@@ -199,6 +199,7 @@ def move_arm_horizontal_step(step):
         print("Cannot move arm to angle less than 0")
         return False
     set_arm_horizontal_angle(arm_present_angle + step)
+    return True
 
 
 def move_arm_vertical_step(step):

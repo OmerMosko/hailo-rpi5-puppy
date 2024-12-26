@@ -8,8 +8,8 @@ import hailo
 from enum import Enum
 from playsound import playsound
 import time
-import treat_control
-import arm_control
+from treat_control import treat_control
+from arm_control import arm_control
 from collections import Counter
 
 
@@ -58,7 +58,6 @@ def get_timestamp():
 def shoot_pet():
     print ("Shooting dog")
     #TODO: move treat to treat events
-    treat_control.perform_treat_throw()
 
 import threading
 from playsound import playsound
@@ -81,11 +80,22 @@ def treat_pet():
     random_file = random.choice(files)
     print(random_file)
     play_sound_in_background(f"./resources/{random_file}")
+    treat_control.perform_treat_throw()
 
+
+angle = 90
+sign = 1
 def scan_pet():
+    global angle
+    global sign
     print ("Scanning dog")
-    # if(not arm_control.move_arm_horizontal_step(10)):
-        # print ("Cannot move arm")
+    step = sign * 1
+    angle += step
+    arm_control.set_arm_horizontal_angle(angle)
+    # cur_angle = arm_control.read_arm_horizontal_angle()
+    print(angle)
+    if  angle>= 150 or angle <=30:
+        sign *=-1
 
 def warn_pet():
     print ("Warning dog")
@@ -145,9 +155,39 @@ def find_event_duration(target_event):
     duration = max(timestamps) - min(timestamps)
     return duration
 
+def left_or_right(dog_bbox):
+     # Compute x_max and y_max for the dog's bounding box
+    try:
+        dog_x_min = dog_bbox.xmin()
+        dog_y_min = dog_bbox.ymin()
+        dog_height = dog_bbox.height()
+        dog_width = dog_bbox.width()
+    except:
+        return
+    dog_x_middle  = dog_x_min + (dog_width/2)
+    local_sign = (dog_x_middle - 0.5)*-1 
+    local_sign = local_sign/abs(local_sign)
+    global angle
+    print ("Centering dog")
+    step = local_sign * 1
+    angle += step
+    if  angle>= 150 or angle <=30:
+        return
+    arm_control.set_arm_horizontal_angle(angle)
+    # cur_angle = arm_control.read_arm_horizontal_angle()
+    print(angle)
+    return 
 
-def is_pet_centered(pet_bbox):
-    return True
+
+def is_pet_centered(dog_bbox):
+     # Compute x_max and y_max for the dog's bounding box
+    dog_x_min = dog_bbox.xmin()
+    dog_y_min = dog_bbox.ymin()
+    dog_height = dog_bbox.height()
+    dog_width = dog_bbox.width()
+    dog_x_middle  = dog_x_min + (dog_width/2)
+    threshold = 0.1
+    return  0.3 < dog_x_middle < 0.7
 
 
 def is_pet_on_couch(dog_bbox, couch_bbox):
@@ -290,11 +330,12 @@ def app_callback(pad, info, user_data):
                 if prev_event == Pet_State.PET_ON_COUCH:
                     treat_pet()
                 scan_pet() #Alon
-                cooldown_period = 2 * SEC
+                cooldown_period = 3
 
             case Pet_State.PET_NOT_CENTERED:
-                track_pet(get_pet_location()) #Alon
-                cooldown_period = 2 * SEC
+                print("track_pet")
+                left_or_right(dog_bbox)
+                cooldown_period = 3
             case Pet_State.PET_ON_COUCH:
                 duration = find_event_duration(Pet_State.PET_ON_COUCH)
                 if WARN_DURATION < duration < SHOOT_DURATION:
@@ -331,8 +372,9 @@ def app_callback(pad, info, user_data):
 if __name__ == "__main__":
     # Create an instance of the user app callback class
     user_data = user_app_callback_class()
-    # arm_control.enable_arm()
-    # treat_control.init_treat_control()
+    arm_control.enable_arm()
+    arm_control.set_arm_horizontal_angle(90)
+    treat_control.init_treat_control()
     app = GStreamerDetectionApp(app_callback, user_data)
     app.run()
 

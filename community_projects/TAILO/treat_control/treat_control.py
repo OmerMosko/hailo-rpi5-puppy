@@ -18,6 +18,7 @@ def init_treat_control():
     pwm.start(0.1)
 
 def perform_treat_throw():
+    print("Throwing")
     pwm.ChangeDutyCycle(10)
     time.sleep(0.3)
     pwm.ChangeDutyCycle(0.1)
