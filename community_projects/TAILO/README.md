@@ -64,10 +64,10 @@ For the 3D printed module to hold the camera we used [Poppy-Project](https://git
 For the camera we used the rpi camera module v2.   
 And of course for the AI we used the [Hailo AI HAT](https://www.raspberrypi.com/products/ai-hat/).  
 ### Schematics
-Raspberry pi GPIOs connections:
-GPIO 14 - UART TX connected to Robotics XR-320 servo motor  
-GPIO 15 - UART RX connected to Robotics XR-320 servo motor
-GPIO 18 - PWM to trigger the treat launching with the SG90 servo
+Raspberry pi GPIOs connections:  
+GPIO 14 - UART TX connected to Robotics XR-320 servo motor.    
+GPIO 15 - UART RX connected to Robotics XR-320 servo motor.  
+GPIO 18 - PWM to trigger the treat launching with the SG90 servo.  
 
 ### Installation
 ### Navigate to the repository directory:
