@@ -1,8 +1,9 @@
 # TAILO - The Smart Companion for Your Dog
 
+![TAILO_logo_sm](https://github.com/user-attachments/assets/49dd031c-6538-48e3-9aa8-d09c8ff93dc2)
+
 ## Overview 
 TAILO is a cutting-edge AI-powered device designed to enhance the lives of pets and their owners. By combining advanced artificial intelligence with playful and practical features, TAILO ensures your dog stays happy, active, and monitored while you’re away. Whether it’s reinforcing good behavior, tracking daily activities, or providing interactive play, TAILO is the ultimate companion for your furry friend.
-
 
 ## Key Features
 
