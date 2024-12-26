@@ -101,9 +101,8 @@ def warn_pet():
     print ("Warning dog")
     files = [
         'No.mp3',
-        'ahhahha.mp3',
         'brandyyyyyy.mp3',
-        'foya.mp3',
+        'foya.mp3'
         'mosko_barking.mp3'
     ]
     random_file = random.choice(files)
