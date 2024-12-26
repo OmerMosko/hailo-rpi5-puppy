@@ -55,7 +55,7 @@ TAILO provides a comprehensive overview of your dog’s daily activities, offeri
 ## Video
 Here's a video submitted by TAILO's team at the HAILO 2024 MAD Hackathon
 
-[![Watch the demo on YouTube](https://img.youtube.com/vi/XXizBHtCLew/0.jpg)](https://youtu.be/XXizBHtCLew)
+[![Watch the demo on YouTube](https://img.youtube.com/vi/XXizBHtCLew/0.jpg)](https://youtu.be/dAok4_63W8E)
 
 ## Setup Instructions
 Enable Serial Port for the [Servo SG90](http://www.ee.ic.ac.uk/pcheung/teaching/DE1_EE/stores/sg90_datasheet.pdf) of the cannon.  
