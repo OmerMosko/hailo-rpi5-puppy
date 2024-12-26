@@ -89,7 +89,6 @@ pip install -r requirements.txt
 ```
 
 ## Usage
-Examples of how to run the script - for example:
 ```bash
 cd community_projects/TAILO
 python main.py -i rpi
