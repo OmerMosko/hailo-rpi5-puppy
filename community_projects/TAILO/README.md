@@ -58,13 +58,16 @@ Here's a video submitted by TAILO's team at the HAILO 2024 MAD Hackathon
 [![Watch the demo on YouTube](https://img.youtube.com/vi/XXizBHtCLew/0.jpg)](https://youtu.be/XXizBHtCLew)
 
 ## Setup Instructions
-Enable Serial Port for the [Servo](http://www.ee.ic.ac.uk/pcheung/teaching/DE1_EE/stores/sg90_datasheet.pdf) of the cannon.  
+Enable Serial Port for the [Servo SG90](http://www.ee.ic.ac.uk/pcheung/teaching/DE1_EE/stores/sg90_datasheet.pdf) of the cannon.  
 For the camera angular movment we are using [XL-320](https://emanual.robotis.com/docs/en/dxl/x/xl320/).  
 For the 3D printed module to hold the camera we used [Poppy-Project](https://github.com/poppy-project/poppy-ergo-jr).  
 For the camera we used the rpi camera module v2.   
 And of course for the AI we used the [Hailo AI HAT](https://www.raspberrypi.com/products/ai-hat/).  
 ### Schematics
- 
+Raspberry pi GPIOs connections:
+GPIO 14 - UART TX connected to Robotics XR-320 servo motor  
+GPIO 15 - UART RX connected to Robotics XR-320 servo motor
+GPIO 18 - PWM to trigger the treat launching with the SG90 servo
 
 ### Installation
 ### Navigate to the repository directory:
