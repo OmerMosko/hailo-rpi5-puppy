@@ -41,7 +41,7 @@ TAILO provides a comprehensive overview of your dog’s daily activities, offeri
 - **Low Cost of Ownership:** Enjoy the benefits of TAILO without any monthly subscription fees.
 - **Connectivity:** Always operational, independent of internet connectivity.
 - **Privacy First:** Operates in a closed circle with no data transmitted to the cloud, ensuring your privacy.
-- **Customizable:** Allows users to define actionable events with free text, tailoring the experience to your needs.
+- **Customizable:** TAILO is built for Makers. It allows users to define actionable events with free text, tailoring the experience to your needs.
   
 ---
 
