@@ -58,14 +58,40 @@ Here's a video submitted by TAILO's team at the HAILO 2024 MAD Hackathon
 [![Watch the demo on YouTube](https://img.youtube.com/vi/XXizBHtCLew/0.jpg)](https://youtu.be/XXizBHtCLew)
 
 ## Setup Instructions
-Run the following commands:
+Enable Serial Port for the [![Servo](http://www.ee.ic.ac.uk/pcheung/teaching/DE1_EE/stores/sg90_datasheet.pdf)] of the cannon.
+For the camera angular movment we are using [![XL-320](https://emanual.robotis.com/docs/en/dxl/x/xl320/)].
+For the 3D printed module to hold the camera we used [![Poppy-Project](https://github.com/poppy-project/poppy-ergo-jr)].
+For the camera we used the rpi camera module v2. 
+And of course for the AI we used the [![Hailo AI HAT](https://www.raspberrypi.com/products/ai-hat/)].
+### Schematics
+ 
+
+### Installation
+### Navigate to the repository directory:
 ```bash
-pip install -r requirenemts.txt
+cd hailo-rpi5-puppy
+```
+
+### Environment Configuration  (Required for Each New Terminal Session)
+Ensure your environment is set up correctly by sourcing the provided script. This script sets the required environment variables and activates the Hailo virtual environment. If the virtual environment does not exist, it will be created automatically.
+```bash
+source setup_env.sh
+```
+### Navigate to the example directory:
+```bash
+cd community_projects/TAILO/
+```
+### Requirements Installation
+Within the activated virtual environment, install the necessary Python packages:
+```bash
+pip install -r requirements.txt
 ./download_resources.sh
 ```
 
 ## Usage
 Examples of how to run the script - for example:
 ```bash
-python template_example.py
+cd community_projects/TAILO
+python main.py -i rpi
 ```
+- To close the application, press `Ctrl+C`.
